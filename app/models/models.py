@@ -28,10 +28,32 @@ class Review(me.Document):
     user = me.ReferenceField(User)
 
 
+
+# Root -> parent == None
+# Subcat -> parent != None
+
+#           Электроника (root, parent == None)
+#          /                                \
+#       Смартфоны(дочерняя, parent!=None)   Бытовая техника(дочерняя, parent!=None)
+#                                               /
+#                                           Стиральные машины(дочерняя, parent!=None, parent==Бытовая техника)
+
+
 class Category(me.Document):
     title = me.StringField(min_length=2, max_length=128, required=True)
     description = me.StringField(max_length=2048)
+    parent = me.ReferenceField('self')
+    subcategories = me.ListField(me.ReferenceField('self'))
 
+    @classmethod
+    def get_root_categories(cls):
+        return cls.objects(parent=None)
+
+    def add_subcategory(self, subcategory):
+        subcategory.parent = self
+        self.subcategories.append(subcategory)
+        subcategory.save()
+        self.save()
 
 class Product(me.Document):
     title = me.StringField(min_length=2, max_length=128, required=True)
