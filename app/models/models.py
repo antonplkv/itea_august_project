@@ -49,11 +49,25 @@ class Category(me.Document):
     def get_root_categories(cls):
         return cls.objects(parent=None)
 
+    def get_products(self):
+        return Product.objects(
+            category=self,
+            in_stock=True
+
+        )
+
     def add_subcategory(self, subcategory):
         subcategory.parent = self
         self.subcategories.append(subcategory)
         subcategory.save()
         self.save()
+
+
+class Parameters(me.EmbeddedDocument):
+    height = me.FloatField()
+    width = me.FloatField()
+    weight = me.FloatField()
+
 
 class Product(me.Document):
     title = me.StringField(min_length=2, max_length=128, required=True)
@@ -63,6 +77,8 @@ class Product(me.Document):
     in_stock = me.BooleanField(default=True)
     category = me.ReferenceField(Category)
     supplier = me.ReferenceField(Supplier)
+    image = me.FileField()
+    parameters = me.EmbeddedDocumentField(Parameters)
 
 
 class News(me.Document):

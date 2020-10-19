@@ -47,3 +47,11 @@ def category(call):
             message_id=call.message.message_id,
             reply_markup=kb
         )
+    else:
+        for product in category.get_products():
+            bot.send_photo(
+                call.message.chat.id,
+                product.image.read(),
+                caption=product.get_formatted_text()
+
+            )
