@@ -20,6 +20,22 @@ class User(me.Document):
     phone = me.StringField(min_length=8, max_length=12)
     address = me.StringField(min_length=4, max_length=128)
 
+    def get_cart(self):
+        cart = Cart.objects.filter(user=self, is_active=True).first()
+        if not cart:
+            cart = Cart.objects.create(user=self)
+        return cart
+
+    @classmethod
+    def initial_create(cls, telegram_id: int, name: str):
+        try:
+            cls.objects.create(
+                telegram_id=telegram_id,
+                name=name
+            )
+        except me.errors.NotUniqueError:
+            pass
+
 
 class Review(me.Document):
     rating = me.IntField(min_value=0, max_value=10)
@@ -56,7 +72,7 @@ class Category(me.Document):
 
         )
 
-    def add_subcategory(self, subcategory):
+    def add_subcategory(self, subcategory: 'Category'):
         subcategory.parent = self
         self.subcategories.append(subcategory)
         subcategory.save()
@@ -85,4 +101,15 @@ class News(me.Document):
     title = me.StringField(min_length=2, max_length=256, required=True)
     body = me.StringField(min_length=2, max_length=4096, required=True)
     created = me.DateTimeField(default=datetime.datetime.now())
+
+
+class Cart(me.Document):
+    user = me.ReferenceField(User)
+    products = me.ListField(me.ReferenceField(Product))
+    is_active = me.BooleanField(default=True)
+    created = me.DateTimeField(default=datetime.datetime.now())
+
+    def add_product(self, product: Product):
+        self.products.append(product)
+        self.save()
 
