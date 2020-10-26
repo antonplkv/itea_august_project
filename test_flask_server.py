@@ -7,4 +7,4 @@ def test():
     return 'Hello world'
 
 
-app.route(host='0.0.0.0', port=80)
+app.run(host='0.0.0.0', port=80, debug=True)
